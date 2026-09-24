@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "scoreboardchanger",
+  "version": "${version}",
+  "name": "Scoreboard Changer",
+  "description": "Visually replaces scoreboard values on servers",
+  "authors": ["You"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.scoreboardchanger.ScoreboardChangerClient"
+    ]
+  },
+  "mixins": [
+    "scoreboardchanger.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
