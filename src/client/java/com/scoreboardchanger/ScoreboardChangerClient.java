@@ -1,6 +1,12 @@
 package com.scoreboardchanger;
 
 import com.scoreboardchanger.config.ModConfig;
+import com.scoreboardchanger.feature.ChatHooks;
+import com.scoreboardchanger.feature.FakeChat;
+import com.scoreboardchanger.feature.MenuDump;
+import com.scoreboardchanger.feature.ServerScan;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import com.scoreboardchanger.gui.ScoreboardChangerScreen;
 import com.scoreboardchanger.util.RankColors;
 import net.fabricmc.api.ClientModInitializer;
@@ -37,7 +43,16 @@ public class ScoreboardChangerClient implements ClientModInitializer {
                 "category.scoreboardchanger"
         ));
 
+        MenuDump.register();
+        ClientSendMessageEvents.ALLOW_CHAT.register(ChatHooks::onChat);
+        ClientSendMessageEvents.ALLOW_COMMAND.register(ChatHooks::onCommand);
+        ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
+            if (!overlay) FakeChat.tryLearn(message);
+        });
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            ServerScan.tick(client);
+            ChatHooks.tick(client);
             if (openGuiKey.wasPressed() && client.currentScreen == null) {
                 client.setScreen(new ScoreboardChangerScreen());
             }

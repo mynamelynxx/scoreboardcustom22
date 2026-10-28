@@ -2,6 +2,7 @@ package com.scoreboardchanger.gui;
  
 import com.scoreboardchanger.ScoreboardChangerClient;
 import com.scoreboardchanger.config.ModConfig;
+import com.scoreboardchanger.feature.ServerScan;
 import com.scoreboardchanger.util.RankColors;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -60,7 +61,7 @@ public class ScoreboardChangerScreen extends Screen {
     private final List<String> colorNames = new ArrayList<>();
     private boolean backgroundDrawn;
     private ButtonWidget colorBtn;
-    private ButtonWidget enableBtn, debugBtn;
+    private ButtonWidget enableBtn, debugBtn, autoAnarchyBtn;
     private OffsetSlider sliderX, sliderY;
  
     public ScoreboardChangerScreen() {
@@ -126,6 +127,22 @@ public class ScoreboardChangerScreen extends Screen {
             this.client.setScreen(new CustomColorsScreen());
         }).dimensions(col2X + 90, y0 + gap * 3, fW, fH).build());
  
+        autoAnarchyBtn = addDrawableChild(ButtonWidget.builder(
+                Text.literal(cfg.autoAnarchy ? "§aАвто-анархия: ВКЛ" : "§7Авто-анархия: ВЫКЛ"),
+                btn -> {
+                    cfg.autoAnarchy = !cfg.autoAnarchy;
+                    btn.setMessage(Text.literal(cfg.autoAnarchy ? "§aАвто-анархия: ВКЛ" : "§7Авто-анархия: ВЫКЛ"));
+                }).dimensions(col2X, y0 + gap * 6, 240, fH).build());
+
+        addDrawableChild(ButtonWidget.builder(Text.literal("Т-Шоп..."), btn -> {
+            save();
+            this.client.setScreen(new ShopEditorScreen());
+        }).dimensions(col2X, y0 + gap * 7, 118, fH).build());
+        addDrawableChild(ButtonWidget.builder(Text.literal("Чат..."), btn -> {
+            save();
+            this.client.setScreen(new FakeChatScreen());
+        }).dimensions(col2X + 122, y0 + gap * 7, 118, fH).build());
+
         sliderX = new OffsetSlider(col1X, y0 + gap * 7, 200, 18, "Смещение X", cfg.offsetX, -300, 300);
         sliderY = new OffsetSlider(col1X, y0 + gap * 8, 200, 18, "Смещение Y", cfg.offsetY, -300, 300);
         addDrawableChild(sliderX);
@@ -192,13 +209,18 @@ public class ScoreboardChangerScreen extends Screen {
         context.drawTextWithShadow(textRenderer, "Цвет ранга:", col1X, y0 + gap * 2 + 5, 0xAAAAAA);
         context.drawTextWithShadow(textRenderer, "Монеты:", col1X, y0 + gap * 3 + 5, 0xAAAAAA);
         context.drawTextWithShadow(textRenderer, "Токены:", col1X, y0 + gap * 4 + 5, 0xAAAAAA);
-        context.drawTextWithShadow(textRenderer, "Анархия:", col1X, y0 + gap * 5 + 5, 0xAAAAAA);
+        context.drawTextWithShadow(textRenderer, "Анархия (запас.):", col1X, y0 + gap * 5 + 5, 0xAAAAAA);
  
         context.drawTextWithShadow(textRenderer, "Убийства:", col2X, y0 + 5, 0xAAAAAA);
         context.drawTextWithShadow(textRenderer, "Смерти:", col2X, y0 + gap + 5, 0xAAAAAA);
         context.drawTextWithShadow(textRenderer, "Наиграно:", col2X, y0 + gap * 2 + 5, 0xAAAAAA);
         context.drawTextWithShadow(textRenderer, "Свои цвета:", col2X, y0 + gap * 3 + 5, 0xAAAAAA);
  
+        String detected = ServerScan.detectedAnarchy();
+        context.drawTextWithShadow(textRenderer,
+                "§7Анархия с сервера: " + (detected != null ? "§a" + detected : "§cне найдена"),
+                col1X, y0 + gap * 6 + 5, 0xAAAAAA);
+
         // ===== Превью ранга (сплошной цвет или градиент) =====
         Text coloredRank = ScoreboardChangerClient.parseColoredText(
                 RankColors.styled(colorCodes.get(selectedColorIndex), rankField.getText()));
